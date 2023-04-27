@@ -26,17 +26,19 @@ def calculateSingleDistance(cluster1, cluster2):
 # 𝑑(𝑢, 𝑣) = 𝛼𝑖𝑑(𝑠, 𝑣) + 𝛼𝑗𝑑(𝑡, 𝑣) + 𝛽𝑑(𝑠, 𝑡) + 𝛾|𝑑(𝑠, 𝑣) − 𝑑(𝑡, 𝑣)|
 # WIP
 def calculateDistancesForClusters(clusters, s_index, t_index, distances):
-    s = clusters[s_index]
-    t = clusters[t_index]
 
-    for i, cluster in enumerate(clusters):
+    for i, _ in enumerate(clusters):
         if i == t_index or i == s_index:
            continue
-         
-        distances = 0,5 * calculateDistanceForPoints(s, cluster) 
-        + 0,5 * calculateDistanceForPoints(t, cluster)
-        - 0,5 * abs(calculateDistanceForPoints(s, cluster) - calculateDistanceForPoints(t, cluster))
-        
+
+        print(0.5 * distances[s_index][i])
+        print(distances[t_index][i]) 
+        distance = 0.5 * distances[s_index][i] + 0.5 * distances[t_index][i] - 0.5 * abs(distances[s_index][i] - distances[t_index][i])
+
+        distances[i][len(clusters) - 1] = distance
+        distances[len(clusters) - 1][i] = distance
+        print(f"Distance {distance}")
+
 
 def calculateDistanceForPoints(cluster1, cluster2):
     min_dist = 99999999
@@ -100,24 +102,27 @@ def cluster(data):
     
     findInitialDistances(clusters, distances)
 
+    i = 0
     # While Clusters > 1
     while len(clusters) > 1:
         # Find the 2 most similar clusters
+        print(f"Clustering loop: #{i}")
         result = findSimilarClusters(clusters, distances)
-        print(result)
-
-        # Update Distances for new cluster
-        # calculateDistancesForClusters(clusters, result[0], result[1])
 
         # Remove the 2 old clusters
         new_clusters = [x for i,x in enumerate(clusters) if i != result[0] and i != result[1]]
         
         # Merge these 2 and add the a new one
         new_cluster = [*clusters[result[0]]]
-        new_cluster.append(*clusters[result[1]])
+        new_cluster.extend(clusters[result[1]])
         new_clusters.append(new_cluster)
         print(new_clusters)
         clusters = new_clusters
+
+        # Update Distances for new cluster
+        calculateDistancesForClusters(clusters, result[0], result[1], distances)
+
+        i += 1
         
 # Main method where the code starts running
 def main():
