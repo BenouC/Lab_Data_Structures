@@ -19,20 +19,24 @@ def readFileData(filename):
 # Method to either calculate the distance for points or whole clusters
 # The else statement is not working yet
 def calculateSingleDistance(cluster1, cluster2):
-    if len(cluster1) == 1 and len(cluster1) == 1:
-        return calculateDistanceForPoints(cluster1, cluster2)
-    else:
-        return calculateDistanceForClusters()    
+    #TODO Switch with other methods too    
+    return calculateDistanceForPoints(cluster1, cluster2)
+    
 
 # 𝑑(𝑢, 𝑣) = 𝛼𝑖𝑑(𝑠, 𝑣) + 𝛼𝑗𝑑(𝑡, 𝑣) + 𝛽𝑑(𝑠, 𝑡) + 𝛾|𝑑(𝑠, 𝑣) − 𝑑(𝑡, 𝑣)|
 # WIP
-def calculateDistanceForClusters(v, s, t):
-    dist = 0,5 * calculateDistanceForPoints(s, v) 
-    + 0,5 * calculateDistanceForPoints(t, v)
-    - 0,5 * abs(calculateDistanceForPoints(s, v) - calculateDistanceForPoints(t, v))
-    
-    return dist
+def calculateDistancesForClusters(clusters, s_index, t_index, distances):
+    s = clusters[s_index]
+    t = clusters[t_index]
 
+    for i, cluster in enumerate(clusters):
+        if i == t_index or i == s_index:
+           continue
+         
+        distances = 0,5 * calculateDistanceForPoints(s, cluster) 
+        + 0,5 * calculateDistanceForPoints(t, cluster)
+        - 0,5 * abs(calculateDistanceForPoints(s, cluster) - calculateDistanceForPoints(t, cluster))
+        
 
 def calculateDistanceForPoints(cluster1, cluster2):
     min_dist = 99999999
@@ -43,7 +47,26 @@ def calculateDistanceForPoints(cluster1, cluster2):
 
     return min_dist
 
-# def calculateDistance(cluster1, cluster2):
+def findInitialDistances(clusters, distances):
+    # TODO: Extract this to a method and switch depending on the METHOD
+    i = 0
+    j = i + 1
+    min_i = -1
+    min_j = -1
+    min_distance = 999999
+    while i <= len(clusters) - 1:
+        j = i + 1
+        while j <= len(clusters) - 1:
+            distance = calculateSingleDistance(clusters[i], clusters[j])
+            distances[i][j] = distance
+            if distance < min_distance:
+                min_distance = distance
+                min_i = i
+                min_j = j
+            j += 1
+        i += 1
+    
+    return (min_i, min_j)    
 
 # Search for similar clusters in order to group them
 def findSimilarClusters(clusters, distances):
@@ -54,8 +77,7 @@ def findSimilarClusters(clusters, distances):
     min_j = -1
     min_distance = 999999
     while j <= len(clusters) - 1:
-        distance = calculateSingleDistance(clusters[i], clusters[j])
-        distances[i][j] = distance
+        distance = distances[i][j]
         if distance < min_distance:
             min_distance = distance
             min_i = i
@@ -63,7 +85,7 @@ def findSimilarClusters(clusters, distances):
         i += 1
         j += 1
 
-    return (min_i, min_j)    
+    return (min_i, min_j) 
 
 # The Big Clustering Loop
 def cluster(data):
@@ -75,20 +97,27 @@ def cluster(data):
     for item in data:
         clusters.append([item])
 
+    
+    findInitialDistances(clusters, distances)
+
     # While Clusters > 1
     while len(clusters) > 1:
         # Find the 2 most similar clusters
         result = findSimilarClusters(clusters, distances)
         print(result)
+
+        # Update Distances for new cluster
+        # calculateDistancesForClusters(clusters, result[0], result[1])
+
         # Remove the 2 old clusters
         new_clusters = [x for i,x in enumerate(clusters) if i != result[0] and i != result[1]]
+        
         # Merge these 2 and add the a new one
         new_cluster = [*clusters[result[0]]]
         new_cluster.append(*clusters[result[1]])
         new_clusters.append(new_cluster)
         print(new_clusters)
         clusters = new_clusters
-        # Distances?
         
 # Main method where the code starts running
 def main():
