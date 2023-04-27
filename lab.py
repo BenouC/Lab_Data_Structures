@@ -25,19 +25,26 @@ def calculateSingleDistance(cluster1, cluster2):
 
 # 𝑑(𝑢, 𝑣) = 𝛼𝑖𝑑(𝑠, 𝑣) + 𝛼𝑗𝑑(𝑡, 𝑣) + 𝛽𝑑(𝑠, 𝑡) + 𝛾|𝑑(𝑠, 𝑣) − 𝑑(𝑡, 𝑣)|
 # WIP
-def calculateDistancesForClusters(clusters, s_index, t_index, distances):
+def calculateDistancesForClusters(clusters, s, t, distances):
+    new_cluster = []
+    new_cluster.extend(s)
+    new_cluster.extend(t)
 
     for i, _ in enumerate(clusters):
-        if i == t_index or i == s_index:
+        if i == len(clusters) - 1:
            continue
 
-        print(0.5 * distances[s_index][i])
-        print(distances[t_index][i]) 
-        distance = 0.5 * distances[s_index][i] + 0.5 * distances[t_index][i] - 0.5 * abs(distances[s_index][i] - distances[t_index][i])
+        print(clusters[i])
 
-        distances[i][len(clusters) - 1] = distance
-        distances[len(clusters) - 1][i] = distance
-        print(f"Distance {distance}")
+        distance = 0.5 * distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, s))}"] 
+        + 0.5 * distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, t))}"] 
+        - 0.5 * abs(distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, s))}"] - distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, t))}"])
+
+        print(clusters[i])
+        print(new_cluster)
+
+        distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, new_cluster))}"] = distance
+        distances[f"{' '.join(map(str, new_cluster))}, {' '.join(map(str, clusters[i]))}"] = distance
 
 
 def calculateDistanceForPoints(cluster1, cluster2):
@@ -46,54 +53,48 @@ def calculateDistanceForPoints(cluster1, cluster2):
         for j in cluster2:
             if abs(i - j) < min_dist:
                 min_dist = abs(i - j)
-
+    # print(f"Minimum Distamce for #{cluster1} and #{cluster2}: {min_dist}")
     return min_dist
 
 def findInitialDistances(clusters, distances):
     # TODO: Extract this to a method and switch depending on the METHOD
     i = 0
     j = i + 1
-    min_i = -1
-    min_j = -1
-    min_distance = 999999
     while i <= len(clusters) - 1:
-        j = i + 1
+        j = 0
         while j <= len(clusters) - 1:
             distance = calculateSingleDistance(clusters[i], clusters[j])
-            distances[i][j] = distance
-            if distance < min_distance:
-                min_distance = distance
-                min_i = i
-                min_j = j
+            distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, clusters[j]))}"] = distance
             j += 1
         i += 1
     
-    return (min_i, min_j)    
-
 # Search for similar clusters in order to group them
 def findSimilarClusters(clusters, distances):
-    # TODO: Extract this to a method and switch depending on the METHOD
     i = 0
     j = i + 1
     min_i = -1
     min_j = -1
     min_distance = 999999
-    while j <= len(clusters) - 1:
-        distance = distances[i][j]
-        if distance < min_distance:
-            min_distance = distance
-            min_i = i
-            min_j = j
+    while i <= len(clusters) - 1:
+        j = 0
+        while j <= len(clusters) - 1:
+            if i != j:   
+                distance = distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, clusters[j]))}"]
+                # print(f"Distance for {clusters[i]} and {clusters[j]} is {distance}")
+                if distance < min_distance:
+                    min_distance = distance
+                    min_i = i
+                    min_j = j
+            j += 1
         i += 1
-        j += 1
-
-    return (min_i, min_j) 
+    
+    return (min_i, min_j)
 
 # The Big Clustering Loop
 def cluster(data):
     # Put each number into its own cluster
     # It will look like this [[1], [2], [4], [8]], each subarray is a cluster
-    distances = [[0 for x in range(len(data))] for x in range(len(data))]
+    distances = {}
     clusters = []
     new_clusters = []
     for item in data:
@@ -113,14 +114,16 @@ def cluster(data):
         new_clusters = [x for i,x in enumerate(clusters) if i != result[0] and i != result[1]]
         
         # Merge these 2 and add the a new one
-        new_cluster = [*clusters[result[0]]]
-        new_cluster.extend(clusters[result[1]])
+        cluster1 = clusters[result[0]]
+        cluster2 = clusters[result[1]]
+        new_cluster = [*cluster1]
+        new_cluster.extend(cluster2)
         new_clusters.append(new_cluster)
         print(new_clusters)
         clusters = new_clusters
 
         # Update Distances for new cluster
-        calculateDistancesForClusters(clusters, result[0], result[1], distances)
+        calculateDistancesForClusters(clusters, cluster1, cluster2, distances)
 
         i += 1
         
