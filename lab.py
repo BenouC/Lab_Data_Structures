@@ -21,7 +21,10 @@ def readFileData(filename):
 def calculateSingleDistance(cluster1, cluster2):
     #TODO Switch with other methods too    
     return calculateDistanceForPoints(cluster1, cluster2)
-    
+
+def hashify(cluster1, cluster2):
+    # print(f"Distance of {cluster1} and {cluster2} is:")
+    return f"{' '.join(map(str, cluster1))}, {' '.join(map(str, cluster2))}"
 
 # 𝑑(𝑢, 𝑣) = 𝛼𝑖𝑑(𝑠, 𝑣) + 𝛼𝑗𝑑(𝑡, 𝑣) + 𝛽𝑑(𝑠, 𝑡) + 𝛾|𝑑(𝑠, 𝑣) − 𝑑(𝑡, 𝑣)|
 # WIP
@@ -34,14 +37,15 @@ def calculateDistancesForClusters(clusters, s, t, distances):
         if i == len(clusters) - 1:
            continue
 
-        print(clusters[i])
+        # print(clusters[i])
+        # print(distances[hashify(s, clusters[i])])
+        # print(distances[hashify(t, clusters[i])])
+        # print(abs(distances[hashify(s, clusters[i])] - distances[hashify(t, clusters[i])]))
 
-        distance = 0.5 * distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, s))}"] 
-        + 0.5 * distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, t))}"] 
-        - 0.5 * abs(distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, s))}"] - distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, t))}"])
+        distance = 0.5 * ((distances[hashify(s, clusters[i])]) + distances[hashify(t, clusters[i])] - (abs(distances[hashify(s, clusters[i])] - distances[hashify(t, clusters[i])])))
 
-        print(clusters[i])
-        print(new_cluster)
+        # print(clusters[i])
+        # print(f"The distance of the {new_cluster} from {clusters[i]} is {distance}")
 
         distances[f"{' '.join(map(str, clusters[i]))}, {' '.join(map(str, new_cluster))}"] = distance
         distances[f"{' '.join(map(str, new_cluster))}, {' '.join(map(str, clusters[i]))}"] = distance
